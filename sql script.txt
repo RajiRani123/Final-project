@@ -1,0 +1,54 @@
+create database banks_portal;
+
+use banks_portal;
+
+create table accounts(
+    accountId int not null unique auto_increment primary key,
+    ownerName varchar(45) not null,
+    owner_ssn int not null,
+    balance decimal(10,2) default 0.00,
+    account_status varchar(45)
+);
+
+create table if not exists transactions(
+    transactionId int not null unique auto_increment primary key,
+    accountID int not null,
+    transactionType varchar(45) not null,
+    transactionAmount decimal(10,2) not null
+);
+
+insert into accounts(ownerName, owner_ssn, balance, account_status) values  ("Maria Jozef", 123456789,10000.00, "active"),
+                                                                            ("Linda Jones", 987654321, 2600.00, "inactive"),
+                                                                            ("John McGrail", 222222222, 100.50, "active"),
+                                                                            ("Patty Luna", 111111111, 509.75, "inactive");
+
+insert into transactions(accountID, transactionType, transactionAmount) values (1, "deposit", 650.98),
+                                                                               (3, "withdraw", 899.87),
+                                                                               (3, "deposit", 350.00);
+
+create procedure accountTransactions(in accountID int)
+begin
+    select * from transactions t where t.accountID = accountID;
+end;
+
+create procedure deposit(in a_accountID int, in amount decimal(10,2))
+begin
+    if((select count(*) from accounts where accountId = a_accountID) != 0) then
+        insert into transactions(accountID, transactionType, transactionAmount) value (a_accountID, "deposit", amount);
+        update accounts a
+            set a.balance = a.balance + amount
+        where a.accountId = a_accountID;
+    end if;
+end;
+
+create procedure withdraw(in a_accountID int, in amount decimal(10,2))
+begin
+    if((select count(*) from accounts where accountId = a_accountID) != 0) then
+        insert into transactions(accountID, transactionType, transactionAmount) value (a_accountID, "withdraw", amount);
+        update accounts a
+            set a.balance = a.balance - amount
+        where a.accountId = a_accountID;
+    end if;
+end;
+
+
